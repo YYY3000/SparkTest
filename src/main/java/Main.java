@@ -1,3 +1,9 @@
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -7,6 +13,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +26,7 @@ public class Main {
     public static void main(String[] args) {
         localTest();
         dataTest();
+        hbaseTest();
     }
 
     private static void localTest() {
@@ -61,6 +69,25 @@ public class Main {
                 .load();
         jdbcDF.show();
         spark.stop();
+    }
+
+
+    private static void hbaseTest() {
+        Configuration configuration = HBaseConfiguration.create();
+        configuration.set("hbase.rootdir", "hdfs://hadoop-mn01:9000/hbase");
+        configuration.set("hbase.zookeeper.quorum", "192.168.5.169:4180,192.168.5.104:4180,192.168.5.93:4180");
+        try {
+            Connection connection = ConnectionFactory.createConnection(configuration);
+            Admin admin = connection.getAdmin();
+            TableName[] tableNames = admin.listTableNames();
+            for (TableName tableName : tableNames) {
+                System.out.println(tableName);
+            }
+            connection.close();
+            admin.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
