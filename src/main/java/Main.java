@@ -8,13 +8,19 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.MapFunction;
+import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -24,30 +30,34 @@ import java.util.List;
 public class Main {
 
     public static void main(String[] args) {
-        localTest();
-        dataTest();
-        hbaseTest();
+        //localTest();
+        //localTest2();
+        //dataTest();
+        //hbaseTest();
     }
 
+    /**
+     * RDD版本单词计数
+     */
     private static void localTest() {
-
         SparkConf sparkConf = new SparkConf().setAppName("localTest").setMaster("local");
         JavaSparkContext ctx = new JavaSparkContext(sparkConf);
 
         JavaRDD<String> lines = ctx.textFile("F:\\hello.txt", 1);
+        JavaPairRDD<String, Integer> words = lines.flatMapToPair(new PairFlatMapFunction<String, String, Integer>() {
+            @Override
+            public Iterator<Tuple2<String, Integer>> call(String s) throws Exception {
+                String[] word = s.split(" ", -1);
 
-        JavaPairRDD<String, Integer> words = lines.flatMapToPair(s -> {
-            String[] word = s.split(" ", -1);
+                List<Tuple2<String, Integer>> pairs = new ArrayList<>();
 
-            List<Tuple2<String, Integer>> pairs = new ArrayList<>();
+                for (int ii = 0; ii < word.length; ii++) {
+                    pairs.add(new Tuple2<>(word[ii], 1));
+                }
 
-            for (int ii = 0; ii < word.length; ii++) {
-                pairs.add(new Tuple2<>(word[ii], 1));
+                return pairs.iterator();
             }
-
-            return pairs.iterator();
         });
-
         JavaPairRDD<String, Integer> counts = words.reduceByKey((arg1, arg2) -> arg1 + arg2);
 
         List<Tuple2<String, Integer>> output = counts.collect();
@@ -55,6 +65,32 @@ public class Main {
             System.out.println(tuple._1() + ": " + tuple._2());
         }
         ctx.stop();
+    }
+
+    /**
+     * Dataset版本单词计数
+     */
+    private static void localTest2() {
+        SparkSession spark = SparkSession.builder().appName("localTest").master("local").getOrCreate();
+        Dataset<String> lines = spark.read().textFile("F:\\hello.txt");
+        Dataset<String> s = lines.flatMap(new FlatMapFunction<String, String>() {
+            @Override
+            public Iterator<String> call(String line) throws Exception {
+                return Arrays.asList(line.split(" ", -1)).iterator();
+            }
+        }, Encoders.javaSerialization(String.class));
+
+        List<Tuple2<String, Object>> results = s.groupByKey(new MapFunction<String, String>() {
+            @Override
+            public String call(String value) throws Exception {
+                System.out.println("value===========" + value);
+                return value.toLowerCase();
+            }
+        }, Encoders.javaSerialization(String.class)).count().collectAsList();
+        for (Tuple2<String, Object> result : results) {
+            System.out.println(result._1 + ":" + result._2);
+        }
+        spark.stop();
     }
 
     private static void dataTest() {
@@ -70,7 +106,6 @@ public class Main {
         jdbcDF.show();
         spark.stop();
     }
-
 
     private static void hbaseTest() {
         Configuration configuration = HBaseConfiguration.create();
