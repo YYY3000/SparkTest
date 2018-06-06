@@ -11,17 +11,15 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Encoders;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.*;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.Metadata;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author yinyiyun
@@ -32,7 +30,7 @@ public class Main {
     public static void main(String[] args) {
         //localTest();
         //localTest2();
-        //dataTest();
+        dataTest();
         //hbaseTest();
     }
 
@@ -94,16 +92,28 @@ public class Main {
     }
 
     private static void dataTest() {
+        String url = "jdbc:mysql://localhost/test?serverTimezone=UTC&useSSL=false";
+        String driver = "com.mysql.cj.jdbc.Driver";
+        Properties properties = new Properties();
+        properties.setProperty("driver", driver);
+        properties.setProperty("user", "root");
+        properties.setProperty("password", "123456");
 
         // .master 设置spark连接
         SparkSession spark = SparkSession.builder().appName("dataTest").master("local").getOrCreate();
-        Dataset<Row> jdbcDF = spark.read()
-                .format("jdbc")
-                .option("url", "jdbc:mysql://localhost/test?user=root&password=123456&serverTimezone=UTC")
-                .option("dbtable", "word")
-                .option("driver", "com.mysql.cj.jdbc.Driver")
-                .load();
-        jdbcDF.show();
+
+        // read
+        Dataset<Row> dataset = spark.read().jdbc(url, "word", properties);
+        Dataset<Row> read = dataset.select("name", "count").where("count > 11");
+
+        //write
+        StructType schema = new StructType(new StructField[]{
+                new StructField("name", DataTypes.StringType, true, Metadata.empty()),
+                new StructField("count", DataTypes.IntegerType, true, Metadata.empty())
+        });
+
+        read.write().mode(SaveMode.Append).jdbc(url, "word_copy", properties);
+        read.show();
         spark.stop();
     }
 
