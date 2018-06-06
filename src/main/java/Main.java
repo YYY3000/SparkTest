@@ -29,8 +29,8 @@ public class Main {
 
     public static void main(String[] args) {
         //localTest();
-        //localTest2();
-        dataTest();
+        localTest2();
+        //dataTest();
         //hbaseTest();
     }
 
@@ -78,42 +78,62 @@ public class Main {
             }
         }, Encoders.javaSerialization(String.class));
 
-        List<Tuple2<String, Object>> results = s.groupByKey(new MapFunction<String, String>() {
+        Dataset<Tuple2<String, Object>> c = s.groupByKey(new MapFunction<String, String>() {
             @Override
             public String call(String value) throws Exception {
                 System.out.println("value===========" + value);
                 return value.toLowerCase();
             }
-        }, Encoders.javaSerialization(String.class)).count().collectAsList();
+        }, Encoders.javaSerialization(String.class)).count();
+
+        Dataset<Row> ro = c.map(new MapFunction<Tuple2<String,Object>, Row>() {
+            @Override
+            public Row call(Tuple2<String, Object> value) throws Exception {
+                return null;
+            }
+        }, Encoders.javaSerialization(Row.class));
+
+        c.createOrReplaceTempView("testWord");
+        Dataset<Row> r = spark.sql("select name as name, count as count from testWord");
+
+        r.write().mode(SaveMode.Append).jdbc(getUrl(), "word_copy", getProperties());
+
+        List<Tuple2<String, Object>> results = c.collectAsList();
         for (Tuple2<String, Object> result : results) {
             System.out.println(result._1 + ":" + result._2);
         }
         spark.stop();
     }
 
-    private static void dataTest() {
-        String url = "jdbc:mysql://localhost/test?serverTimezone=UTC&useSSL=false";
+    private static String getUrl() {
+        return "jdbc:mysql://localhost/test?serverTimezone=UTC&useSSL=false";
+    }
+
+    private static Properties getProperties() {
         String driver = "com.mysql.cj.jdbc.Driver";
         Properties properties = new Properties();
         properties.setProperty("driver", driver);
         properties.setProperty("user", "root");
         properties.setProperty("password", "123456");
+        return properties;
+    }
+
+    private static void dataTest() {
 
         // .master 设置spark连接
         SparkSession spark = SparkSession.builder().appName("dataTest").master("local").getOrCreate();
 
         // read
-        Dataset<Row> dataset = spark.read().jdbc(url, "word", properties);
+        Dataset<Row> dataset = spark.read().jdbc(getUrl(), "word", getProperties());
         Dataset<Row> read = dataset.select("name", "count").where("count > 11");
 
         //write
-        StructType schema = new StructType(new StructField[]{
-                new StructField("name", DataTypes.StringType, true, Metadata.empty()),
-                new StructField("count", DataTypes.IntegerType, true, Metadata.empty())
-        });
+        read.write().mode(SaveMode.Append).jdbc(getUrl(), "word_copy", getProperties());
+//        StructType schema = new StructType(new StructField[]{
+//                new StructField("name", DataTypes.StringType, true, Metadata.empty()),
+//                new StructField("count", DataTypes.IntegerType, true, Metadata.empty())
+//        });
 
-        read.write().mode(SaveMode.Append).jdbc(url, "word_copy", properties);
-        read.show();
         spark.stop();
     }
 
