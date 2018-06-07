@@ -26,9 +26,9 @@ public class Main {
 
     public static void main(String[] args) {
         //localTest();
-        localTest2();
+        //localTest2();
         //dataTest();
-        //hbaseTest();
+        hbaseTest();
     }
 
     /**

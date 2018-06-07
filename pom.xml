@@ -22,6 +22,13 @@
             <version>2.7.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-yarn-client -->
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-yarn-client</artifactId>
+            <version>2.7.1</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core -->
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -36,7 +43,6 @@
             <version>2.2.1</version>
         </dependency>
 
-
         <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-streaming -->
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -44,9 +50,17 @@
             <version>2.2.1</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-client -->
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase -->
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase</artifactId>
             <version>2.0.0</version>
         </dependency>
 
