@@ -86,18 +86,6 @@ public class Main {
             }
         }, Encoders.javaSerialization(String.class)).count();
 
-        Dataset<Row> ro = c.map(new MapFunction<Tuple2<String,Object>, Row>() {
-            @Override
-            public Row call(Tuple2<String, Object> value) throws Exception {
-                return null;
-            }
-        }, Encoders.javaSerialization(Row.class));
-
-        c.createOrReplaceTempView("testWord");
-        Dataset<Row> r = spark.sql("select name as name, count as count from testWord");
-
-        r.write().mode(SaveMode.Append).jdbc(getUrl(), "word_copy", getProperties());
-
         List<Tuple2<String, Object>> results = c.collectAsList();
         for (Tuple2<String, Object> result : results) {
             System.out.println(result._1 + ":" + result._2);
