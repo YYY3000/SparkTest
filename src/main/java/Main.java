@@ -9,13 +9,10 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.ForeachPartitionFunction;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.Metadata;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
 
 import java.io.IOException;
@@ -86,10 +83,13 @@ public class Main {
             }
         }, Encoders.javaSerialization(String.class)).count();
 
-        List<Tuple2<String, Object>> results = c.collectAsList();
-        for (Tuple2<String, Object> result : results) {
-            System.out.println(result._1 + ":" + result._2);
-        }
+        c.foreachPartition(new ForeachPartitionFunction<Tuple2<String, Object>>() {
+            @Override
+            public void call(Iterator<Tuple2<String, Object>> t) throws Exception {
+
+            }
+        });
+
         spark.stop();
     }
 
