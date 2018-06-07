@@ -31,7 +31,7 @@ public class HBaseTest {
         HBaseAdmin admin = (HBaseAdmin) ConnectionFactory.createConnection(conf).getAdmin();
 
         // todo 2018-6-7 验证表是否存在报错 不验证直接创建可以成功
-        if (admin.tableExists(TableName.valueOf(tableName))) {
+        if (/*admin.tableExists(TableName.valueOf(tableName))*/ false) {
             System.out.println(tableName + " Table exists!");
         } else {
             TableDescriptorBuilder build = TableDescriptorBuilder
@@ -170,9 +170,9 @@ public class HBaseTest {
         conf.set("hbase.rootdir", "hdfs://hadoop-mn01:9000/hbase");
         conf.set("hbase.zookeeper.quorum", "192.168.5.169:4180,192.168.5.104:4180,192.168.5.93:4180");
         try {
-//            String[] familyColumn = new String[]{"test3", "test4"};
-//            createTable(conf, "test", familyColumn);
-            dropTable(conf, "test");
+            String[] familyColumn = new String[]{"id", "name"};
+            createTable(conf, "test", familyColumn);
+            //dropTable(conf, "test");
         } catch (Exception e) {
             e.printStackTrace();
         }
