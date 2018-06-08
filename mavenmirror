@@ -1,0 +1,38 @@
+1、阿里云的镜像站
+
+<mirror>
+    <id>nexus-aliyun</id>
+    <name>Nexus aliyun</name>
+    <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+    <mirrorOf>central</mirrorOf>
+</mirror>
+
+
+2. 剩下就是国外的了，maven官方运维的2号仓库
+
+<mirror>
+    <id>repo2</id>
+    <name>Mirror from Maven Repo2</name>
+    <url>http://repo2.maven.org/maven2/</url>
+    <mirrorOf>central</mirrorOf>
+</mirror>
+
+
+3. maven在UK架设的仓库（有时候速度会比官方2号仓库快）
+
+<mirror>
+    <id>ui</id>
+    <name>Mirror from UK</name>
+    <url>http://uk.maven.org/maven2/</url>
+    <mirrorOf>central</mirrorOf>
+</mirror>
+
+
+4. JBoss的仓库
+
+<mirror>
+    <id>jboss-public-repository-group</id>
+    <mirrorOf>central</mirrorOf>
+    <name>JBoss Public Repository Group</name>
+    <url>http://repository.jboss.org/nexus/content/groups/public</url>
+</mirror>

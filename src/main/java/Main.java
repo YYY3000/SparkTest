@@ -27,8 +27,8 @@ public class Main {
     public static void main(String[] args) {
         //localTest();
         //localTest2();
-        //dataTest();
-        hbaseTest();
+        dataTest();
+        //hbaseTest();
     }
 
     /**
@@ -106,6 +106,13 @@ public class Main {
         return properties;
     }
 
+    private static List<Word> getTestList() {
+        List<Word> words = new ArrayList<>();
+        words.add(new Word(UUID.randomUUID().toString(), "yinyiyun", 8));
+        words.add(new Word(UUID.randomUUID().toString(), "yinsanqian", 10));
+        return words;
+    }
+
     private static void dataTest() {
 
         // .master 设置spark连接
@@ -115,12 +122,14 @@ public class Main {
         Dataset<Row> dataset = spark.read().jdbc(getUrl(), "word", getProperties());
         Dataset<Row> read = dataset.select("name", "count").where("count > 11");
 
+        read.show();
+
+        List<Word> words = getTestList();
+        Dataset<Row> data = spark.createDataFrame(words, Word.class);
+        data.show();
+
         //write
-        read.write().mode(SaveMode.Append).jdbc(getUrl(), "word_copy", getProperties());
-//        StructType schema = new StructType(new StructField[]{
-//                new StructField("name", DataTypes.StringType, true, Metadata.empty()),
-//                new StructField("count", DataTypes.IntegerType, true, Metadata.empty())
-//        });
+        data.write().mode(SaveMode.Append).jdbc(getUrl(), "word_copy", getProperties());
 
         spark.stop();
     }
