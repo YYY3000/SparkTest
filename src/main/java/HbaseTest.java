@@ -119,6 +119,8 @@ public class HbaseTest {
         words.add(new Word(UUID.randomUUID().toString(), "word", 4));
 
         JavaRDD<Word> rdd = sc.parallelize(words);
+
+
         JavaPairRDD<String, Word> pairRdd = rdd.mapPartitionsToPair(new PairFlatMapFunction<Iterator<Word>, String, Word>() {
             @Override
             public Iterator<Tuple2<String, Word>> call(Iterator<Word> words) throws Exception {

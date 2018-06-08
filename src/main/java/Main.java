@@ -9,7 +9,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
-import org.apache.spark.api.java.function.ForeachPartitionFunction;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
 import org.apache.spark.sql.*;
@@ -82,13 +81,6 @@ public class Main {
                 return value.toLowerCase();
             }
         }, Encoders.javaSerialization(String.class)).count();
-
-        c.foreachPartition(new ForeachPartitionFunction<Tuple2<String, Object>>() {
-            @Override
-            public void call(Iterator<Tuple2<String, Object>> t) throws Exception {
-
-            }
-        });
 
         spark.stop();
     }
