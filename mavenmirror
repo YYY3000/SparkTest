@@ -8,7 +8,7 @@
 </mirror>
 
 
-2. 剩下就是国外的了，maven官方运维的2号仓库
+2. maven官方运维的2号仓库
 
 <mirror>
     <id>repo2</id>
@@ -18,7 +18,7 @@
 </mirror>
 
 
-3. maven在UK架设的仓库（有时候速度会比官方2号仓库快）
+3. maven在UK架设的仓库
 
 <mirror>
     <id>ui</id>
