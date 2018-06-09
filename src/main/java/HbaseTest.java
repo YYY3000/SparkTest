@@ -2,17 +2,17 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
+import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
@@ -92,6 +92,7 @@ public class HbaseTest {
                     ImmutableBytesWritable.class,
                     Result.class);
 
+
             List<Tuple2<ImmutableBytesWritable, Result>> results = myRDD.collect();
             for (Tuple2<ImmutableBytesWritable, Result> result : results) {
                 Result rs = result._2;
@@ -112,38 +113,32 @@ public class HbaseTest {
     private static void writeTest(SparkSession spark) throws Exception {
         init();
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
-        Connection connection = ConnectionFactory.createConnection(configuration);
-        Table table = connection.getTable(TableName.valueOf("word"));
+
         List<Word> words = new ArrayList<>();
         words.add(new Word(UUID.randomUUID().toString(), "hello", 5));
         words.add(new Word(UUID.randomUUID().toString(), "word", 4));
 
         JavaRDD<Word> rdd = sc.parallelize(words);
 
-
-        JavaPairRDD<String, Word> pairRdd = rdd.mapPartitionsToPair(new PairFlatMapFunction<Iterator<Word>, String, Word>() {
+        JavaPairRDD<ImmutableBytesWritable, Put> pairRdd = rdd.mapPartitionsToPair(new PairFlatMapFunction<Iterator<Word>, ImmutableBytesWritable, Put>() {
             @Override
-            public Iterator<Tuple2<String, Word>> call(Iterator<Word> words) throws Exception {
-                List<Tuple2<String, Word>> pairs = new ArrayList<>();
-                while (words.hasNext()) {
-                    Word word = words.next();
-                    pairs.add(new Tuple2<>(word.getId(), word));
+            public Iterator<Tuple2<ImmutableBytesWritable, Put>> call(Iterator<Word> wordIterator) throws Exception {
+                List<Tuple2<ImmutableBytesWritable, Put>> pairs = new ArrayList<>();
+                while (wordIterator.hasNext()) {
+                    Word word = wordIterator.next();
+                    Put put = new Put(Bytes.toBytes(word.getId()));
+                    put.addColumn(Bytes.toBytes("name"), Bytes.toBytes("name"), Bytes.toBytes(word.getName()));
+                    put.addColumn(Bytes.toBytes("count"), Bytes.toBytes("name"), Bytes.toBytes(word.getCount()));
+                    Tuple2<ImmutableBytesWritable, Put> tuple2 = new Tuple2<>(new ImmutableBytesWritable(), put);
+                    pairs.add(tuple2);
                 }
                 return pairs.iterator();
             }
         });
-
-        pairRdd.foreachPartition(new VoidFunction<Iterator<Tuple2<String, Word>>>() {
-            @Override
-            public void call(Iterator<Tuple2<String, Word>> tuple2Iterator) throws Exception {
-                while (tuple2Iterator.hasNext()) {
-                    Tuple2<String, Word> tuple2 = tuple2Iterator.next();
-                    Put put = new Put(Bytes.toBytes(tuple2._1));
-                    put.addColumn(Bytes.toBytes("name"), Bytes.toBytes("name"), Bytes.toBytes(tuple2._2.getName()));
-                    table.put(put);
-                }
-            }
-        });
+        JobConf jobConf = new JobConf(configuration);
+        jobConf.setOutputFormat(TableOutputFormat.class);
+        jobConf.set(TableOutputFormat.OUTPUT_TABLE, "word");
+        pairRdd.saveAsHadoopDataset(jobConf);
     }
 
     public static void main(String[] args) throws IOException {
