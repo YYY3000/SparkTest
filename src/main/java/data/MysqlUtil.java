@@ -10,7 +10,7 @@ import java.text.MessageFormat;
  */
 public class MysqlUtil extends DatabaseUtil {
 
-    private static String driver = "com.mysql.jdbc.Driver";
+    private static String driver = "com.mysql.cj.jdbc.Driver";
 
     public MysqlUtil(String serverName, String port, String dbName, String user, String password) {
         super(serverName, port, dbName, user, password);
