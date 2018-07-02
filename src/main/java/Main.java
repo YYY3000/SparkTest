@@ -23,8 +23,8 @@ public class Main {
     public static void main(String[] args) {
         //localTest();
         //localTest2();
-        dataTest();
-        //hbaseTest();
+        //dataTest();
+        hdfs();
     }
 
     /**
@@ -108,6 +108,35 @@ public class Main {
         mysqlUtil.writeTable(data, "word_copy");
 
         spark.stop();
+    }
+
+    public static void hdfs() {
+        try {
+            SparkConf sparkConf = new SparkConf().setMaster("local").setAppName("hbase test");
+            sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
+            SparkSession spark = SparkSession.builder().config(sparkConf).getOrCreate();
+
+            String path = "hdfs://192.168.1.16:9000/dxy/testData/20171110/mroout_tianjin/1711102300";
+            Dataset<String> data = spark.read().textFile(path);
+            data.show();
+
+            Dataset<Word> d = data.map(new MapFunction<String, Word>() {
+                @Override
+                public Word call(String value) throws Exception {
+                    String[] values = value.split("\t");
+                    for (String s : values) {
+                        System.out.println(s);
+                    }
+                    return new Word(values[0], values[1], Integer.valueOf(values[2]));
+                }
+            }, Encoders.javaSerialization(Word.class));
+
+            spark.createDataFrame(d.javaRDD(), Word.class).show();
+
+            spark.stop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 }

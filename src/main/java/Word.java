@@ -43,4 +43,13 @@ public class Word implements Serializable {
     public void setCount(Integer count) {
         this.count = count;
     }
+
+    @Override
+    public String toString() {
+        return "Word{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", count=" + count +
+                '}';
+    }
 }
