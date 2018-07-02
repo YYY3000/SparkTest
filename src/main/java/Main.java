@@ -1,9 +1,4 @@
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Admin;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.ConnectionFactory;
+import data.MysqlUtil;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -11,10 +6,12 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.api.java.function.PairFlatMapFunction;
-import org.apache.spark.sql.*;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Encoders;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -85,19 +82,6 @@ public class Main {
         spark.stop();
     }
 
-    private static String getUrl() {
-        return "jdbc:mysql://localhost/test?serverTimezone=UTC&useSSL=false";
-    }
-
-    private static Properties getProperties() {
-        String driver = "com.mysql.cj.jdbc.Driver";
-        Properties properties = new Properties();
-        properties.setProperty("driver", driver);
-        properties.setProperty("user", "root");
-        properties.setProperty("password", "123456");
-        return properties;
-    }
-
     private static List<Word> getTestList() {
         List<Word> words = new ArrayList<>();
         words.add(new Word(UUID.randomUUID().toString(), "yinyiyun", 8));
@@ -110,38 +94,20 @@ public class Main {
         // .master 设置spark连接
         SparkSession spark = SparkSession.builder().appName("dataTest").master("local").getOrCreate();
 
-        // read
-        Dataset<Row> dataset = spark.read().jdbc(getUrl(), "word", getProperties());
-        Dataset<Row> read = dataset.select("name", "count").where("count > 11");
+        MysqlUtil mysqlUtil = new MysqlUtil("localhost", "3306", "test", "root", "123456");
 
-        read.show();
+        // read
+        Dataset<Row> dataset = mysqlUtil.readTable(spark, "word");
+        dataset.show();
 
         List<Word> words = getTestList();
         Dataset<Row> data = spark.createDataFrame(words, Word.class);
         data.show();
 
         //write
-        data.write().mode(SaveMode.Append).jdbc(getUrl(), "word_copy", getProperties());
+        mysqlUtil.writeTable(data, "word_copy");
 
         spark.stop();
-    }
-
-    private static void hbaseTest() {
-        Configuration configuration = HBaseConfiguration.create();
-        configuration.set("hbase.rootdir", "hdfs://hadoop-mn01:9000/hbase");
-        configuration.set("hbase.zookeeper.quorum", "192.168.5.169:4180,192.168.5.104:4180,192.168.5.93:4180");
-        try {
-            Connection connection = ConnectionFactory.createConnection(configuration);
-            Admin admin = connection.getAdmin();
-            TableName[] tableNames = admin.listTableNames();
-            for (TableName tableName : tableNames) {
-                System.out.println(tableName);
-            }
-            connection.close();
-            admin.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
 }

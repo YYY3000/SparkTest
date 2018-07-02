@@ -1,13 +1,12 @@
+import data.HBaseUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.mapred.TableOutputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -29,8 +28,6 @@ import java.util.UUID;
 public class HbaseTest {
 
     private static Configuration configuration;
-    private static Connection connection;
-    private static Admin admin;
 
     /**
      * 初始化hbase链接
@@ -39,59 +36,18 @@ public class HbaseTest {
         configuration = HBaseConfiguration.create();
         configuration.set("hbase.rootdir", "hdfs://hadoop-mn01:9000/hbase");
         configuration.set("hbase.zookeeper.quorum", "192.168.5.169:4180,192.168.5.104:4180,192.168.5.93:4180");
-        try {
-            connection = ConnectionFactory.createConnection(configuration);
-            admin = connection.getAdmin();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 关闭hbase链接
-     */
-    public static void close() {
-        try {
-            if (admin != null) {
-                admin.close();
-            }
-            if (null != connection) {
-                connection.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * 用hbase接口查询hbase中存在的表
-     *
-     * @throws IOException
-     */
-    public static void listTables() throws IOException {
-        init();
-        HTableDescriptor hTableDescriptors[] = admin.listTables();
-        for (HTableDescriptor hTableDescriptor : hTableDescriptors) {
-            System.out.println(hTableDescriptor.getNameAsString());
-        }
-        close();
     }
 
     private static void readTest(SparkSession spark) {
         init();
         //用hbase接口读取hbase数据
-        //把hbase数据读取到
         JavaSparkContext sc = new JavaSparkContext(spark.sparkContext());
         try {
             String tableName = "test";
             configuration.set(TableInputFormat.INPUT_TABLE, tableName);
 
-            JavaPairRDD<ImmutableBytesWritable, Result> myRDD = sc.newAPIHadoopRDD(
-                    configuration,
-                    TableInputFormat.class,
-                    ImmutableBytesWritable.class,
-                    Result.class);
-
+            HBaseUtil hBaseUtil = new HBaseUtil(configuration);
+            JavaPairRDD<ImmutableBytesWritable, Result> myRDD = hBaseUtil.read(sc, tableName, null);
 
             List<Tuple2<ImmutableBytesWritable, Result>> results = myRDD.collect();
             for (Tuple2<ImmutableBytesWritable, Result> result : results) {
@@ -135,10 +91,8 @@ public class HbaseTest {
                 return pairs.iterator();
             }
         });
-        JobConf jobConf = new JobConf(configuration);
-        jobConf.setOutputFormat(TableOutputFormat.class);
-        jobConf.set(TableOutputFormat.OUTPUT_TABLE, "word");
-        pairRdd.saveAsHadoopDataset(jobConf);
+        HBaseUtil hBaseUtil = new HBaseUtil(configuration);
+        hBaseUtil.write(pairRdd, "word");
     }
 
     public static void main(String[] args) throws IOException {

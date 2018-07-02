@@ -138,7 +138,7 @@ public abstract class DatabaseUtil {
     }
 
     /**
-     * 读表(全表)
+     * 读表(全表) - spark1 使用SqlContext 和 DataFrame
      *
      * @param spark     sparkSession
      * @param tableName 表名称
@@ -149,7 +149,7 @@ public abstract class DatabaseUtil {
     }
 
     /**
-     * 读表(根据条件读取)
+     * 读表(根据条件读取) - spark1 使用SqlContext 和 DataFrame
      *
      * @param spark     sparkSession
      * @param tableName 表名称
@@ -174,7 +174,7 @@ public abstract class DatabaseUtil {
     }
 
     /**
-     * 写数据入表
+     * 写数据入表  - spark1 使用 DataFrame
      *
      * @param data      数据Dataset
      * @param tableName 表名称

@@ -24,6 +24,10 @@ public class HBaseUtil {
 
     private Configuration configuration;
 
+    public HBaseUtil(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
     /**
      * 读表(全表)
      *
