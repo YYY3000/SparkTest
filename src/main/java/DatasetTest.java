@@ -18,7 +18,7 @@ import java.util.*;
  * @author yinyiyun
  * @date 2018/6/5 14:33
  */
-public class Main {
+public class DatasetTest {
 
     public static void main(String[] args) {
         //localTest();
