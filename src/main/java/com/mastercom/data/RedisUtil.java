@@ -2,6 +2,7 @@ package com.mastercom.data;
 
 import redis.clients.jedis.Jedis;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -29,13 +30,19 @@ public class RedisUtil {
     }
 
     public static void main(String[] args) {
-        RedisUtil redisUtil = new RedisUtil("hadoop-dn03", "6379", "mastercom");
+        RedisUtil redisUtil = new RedisUtil("hadoop-dn01", "6379", "mastercom");
         Jedis jedis = redisUtil.getJedis();
         Map<String, String> map = jedis.hgetAll("sys_alarmtype_id");
         for (Map.Entry<String, String> entry : map.entrySet()) {
             System.out.println(entry.getKey());
             System.out.println(entry.getValue());
         }
-        System.out.println(map);
+        Map<String, String> m = new HashMap<>();
+        m.put("yyy", "yyy");
+        m.put("kkk", "kkk");
+        m.put("ttt", "ttt");
+        m.put("www", "www");
+        m.put("ppp", "ppp");
+        jedis.hset("map_test".getBytes(), "name".getBytes(), m.toString().getBytes());
     }
 }
