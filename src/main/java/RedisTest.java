@@ -15,7 +15,7 @@ public class RedisTest {
 
     public static void main(String[] args) {
         SparkConf sparkConf = new SparkConf().setMaster("local").setAppName("redis test");
-        sparkConf.set("redis.host", "hadoop-dn03");
+        sparkConf.set("redis.host", "hadoop-dn01");
         sparkConf.set("redis.port", "6379");
         sparkConf.set("redis.auth", "mastercom");
         SparkContext sparkContext = new SparkContext(sparkConf);
