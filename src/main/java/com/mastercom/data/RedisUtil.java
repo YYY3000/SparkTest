@@ -1,4 +1,4 @@
-package data;
+package com.mastercom.data;
 
 import redis.clients.jedis.Jedis;
 

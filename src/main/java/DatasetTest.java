@@ -1,4 +1,4 @@
-import data.MysqlUtil;
+import com.mastercom.data.MysqlUtil;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;

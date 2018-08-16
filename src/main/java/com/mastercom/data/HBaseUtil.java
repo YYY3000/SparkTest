@@ -1,4 +1,4 @@
-package data;
+package com.mastercom.data;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Put;

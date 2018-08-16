@@ -1,4 +1,4 @@
-package data;
+package com.mastercom.data;
 
 import java.text.MessageFormat;
 
