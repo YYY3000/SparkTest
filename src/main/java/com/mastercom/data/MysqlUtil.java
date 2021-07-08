@@ -18,7 +18,7 @@ public class MysqlUtil extends DatabaseUtil {
 
     @Override
     protected String getUrl(String serverName, String port, String dbName) {
-        return MessageFormat.format("jdbc:mysql://{0}:{1}/{2}?serverTimezone=UTC", serverName, port, dbName);
+        return MessageFormat.format("jdbc:mysql://{0}:{1}/{2}?serverTimezone=UTC&rewriteBatchedStatements=true&batchSize=1000", serverName, port, dbName);
     }
 
     @Override

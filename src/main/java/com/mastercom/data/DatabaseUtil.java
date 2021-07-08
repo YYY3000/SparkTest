@@ -63,6 +63,9 @@ public abstract class DatabaseUtil {
         properties.setProperty("driver", driver);
         properties.setProperty("user", user);
         properties.setProperty("password", password);
+        properties.setProperty("rewriteBatchedStatements", "true");
+        properties.setProperty("batchsize", "2000");
+        properties.setProperty("serverTimezone", "UTC");
         return properties;
     }
 
