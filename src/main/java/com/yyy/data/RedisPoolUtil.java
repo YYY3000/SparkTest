@@ -1,4 +1,4 @@
-package com.mastercom.data;
+package com.yyy.data;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

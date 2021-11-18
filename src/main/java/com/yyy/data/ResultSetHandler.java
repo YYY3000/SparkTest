@@ -1,4 +1,4 @@
-package com.mastercom.data;
+package com.yyy.data;
 
 /**
  * ResultSet处理接口

@@ -1,4 +1,4 @@
-import com.mastercom.data.HBaseUtil;
+import com.yyy.data.HBaseUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.HBaseConfiguration;

@@ -1,4 +1,4 @@
-package com.mastercom.data;
+package com.yyy.data;
 
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
