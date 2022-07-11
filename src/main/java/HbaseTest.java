@@ -34,8 +34,8 @@ public class HbaseTest {
      */
     public static void init() {
         configuration = HBaseConfiguration.create();
-        configuration.set("hbase.rootdir", "hdfs://hadoop-mn01:9000/hbase");
-        configuration.set("hbase.zookeeper.quorum", "192.168.5.169:4180,192.168.5.104:4180,192.168.5.93:4180");
+        configuration.set("hbase.rootdir", "hdfs://127.0.0.1:9000/hbase");
+        configuration.set("hbase.zookeeper.quorum", "127.0.0.1:2181");
     }
 
     private static void readTest(SparkSession spark) {

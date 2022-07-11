@@ -116,7 +116,7 @@ public class DatasetTest {
             sparkConf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer");
             SparkSession spark = SparkSession.builder().config(sparkConf).getOrCreate();
 
-            String path = "hdfs://192.168.1.16:9000/dxy/testData/20171110/mroout_tianjin/1711102300";
+            String path = "hdfs://127.0.0.1:9000/test/aaa.txt";
             Dataset<String> data = spark.read().textFile(path);
             data.show();
 
